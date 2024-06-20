@@ -98,7 +98,69 @@ cp main.tf backup/
 cp terraform.tfstate backup/
 ```
 
-### 5. Limpieza de recursos
+### 5. Modificaciones y limpieza de recursos
+
+Si agregas más código a tu archivo `main.tf`, simplemente ejecuta `terraform apply` para aplicar los cambios. Por ejemplo, para añadir un recurso de base de datos RDS, añade lo siguiente al final de `main.tf`:
+
+```hcl
+resource "aws_db_instance" "default" {
+  allocated_storage    = 10
+  db_name              = "mydb"
+  engine               = "mysql"
+  engine_version       = "8.0"
+  instance_class       = "db.t3.micro"
+  username             = "foo"
+  password             = "foobarbaz"
+  parameter_group_name = "default.mysql8.0"
+  skip_final_snapshot  = true
+}
+```
+
+#### Comandos para aplicar cambios
+
+1. **Revisa el plan de ejecución:**
+
+   ```bash
+   terraform plan
+   ```
+
+   Este comando mostrará el plan de ejecución incluyendo los nuevos recursos que se añadirán.
+
+2. **Aplica la configuración:**
+
+   ```bash
+   terraform apply
+   ```
+
+   Se te pedirá que confirmes la ejecución. Escribe `yes` para proceder. Terraform desplegará los nuevos recursos especificados.
+
+#### Importante: Borrado de recursos
+
+Si eliminas una parte del código en `main.tf` y luego ejecutas `terraform apply`, Terraform destruirá esos recursos y ya no estarán disponibles. Por ejemplo, si eliminas el recurso de base de datos RDS:
+
+```hcl
+resource "aws_db_instance" "default" {
+  allocated_storage    = 10
+  db_name              = "mydb"
+  engine               = "mysql"
+  engine_version       = "8.0"
+  instance_class       = "db.t3.micro"
+  username             = "foo"
+  password             = "foobarbaz"
+  parameter_group_name = "default.mysql8.0"
+  skip_final_snapshot  = true
+}
+```
+
+Y luego ejecutas:
+
+```bash
+terraform apply
+```
+
+Terraform eliminará la base de datos RDS especificada.
+
+### Limpieza de recursos
 
 Para evitar cargos innecesarios en tu cuenta de AWS, asegúrate de destruir los recursos creados cuando ya no los necesites:
 
@@ -110,4 +172,5 @@ Se te pedirá que confirmes la destrucción. Escribe `yes` para proceder.
 
 ### Conclusión
 
-Siguiendo estos pasos, has configurado un entorno Cloud9, creado un archivo de configuración `main.tf` para Terraform, y desplegado una instancia EC2 en AWS. También aprendiste sobre los archivos y carpetas generados por Terraform y cómo realizar copias de seguridad de estos archivos importantes.
+Siguiendo estos pasos, has configurado un entorno Cloud9, creado un archivo de configuración `main.tf` para Terraform, y desplegado una instancia EC2 en AWS. También aprendiste cómo añadir y eliminar recursos en tu archivo de configuración y cómo realizar copias de seguridad de estos archivos importantes.
+
