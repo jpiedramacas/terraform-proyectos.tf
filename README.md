@@ -8,7 +8,10 @@ Este proyecto detalla el proceso para desplegar una instancia EC2 en AWS utiliza
 1. **AWS CLI** y **Terraform** deben estar instalados en el entorno Cloud9.
 2. Credenciales de AWS configuradas en la carpeta `.aws/` en el entorno Cloud9.
 3. Permisos necesarios en la cuenta de AWS para crear instancias EC2.
-4. AWS Provider - [TERRAFORM](https://registry.terraform.io/providers/tfproviders/aws/latest/docs)
+
+### AWS Provider
+El Registro de Proveedores de Terraform para AWS proporciona documentación y recursos necesarios para utilizar Terraform con Amazon Web Services. Permite gestionar y aprovisionar infraestructura AWS mediante código, facilitando la creación, actualización y destrucción de recursos de manera automatizada y repetible. Esto asegura consistencia y eficiencia en la gestión de la infraestructura en la nube.
+1. [TERRAFORM](https://registry.terraform.io/providers/tfproviders/aws/latest/docs)
 
 ### 1. Configuración del entorno Cloud9
 
