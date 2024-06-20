@@ -1,4 +1,3 @@
-# README
 
 ## Despliegue de una instancia EC2 usando Terraform en AWS Cloud9
 
