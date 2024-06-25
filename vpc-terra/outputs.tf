@@ -1,41 +1,34 @@
-variable "aws_region" {
-  description = "The AWS region to deploy in"
-  type        = string
-  default     = "us-east-1"
+output "vpc_id" {
+  description = "ID of the VPC"
+  value       = aws_vpc.this.id
 }
- 
-variable "vpc_cidr_block" {
-  description = "CIDR block for the VPC"
-  type        = string
-  default     = "10.0.0.0/16"
+
+output "public_subnet_ids" {
+  description = "IDs of the public subnets"
+  value       = aws_subnet.public_subnets[*].id
 }
- 
-variable "public_subnet_cidrs" {
-  description = "List of CIDR blocks for the public subnets"
-  type        = list(string)
-  default     = ["10.0.1.0/24", "10.0.2.0/24"]
+
+output "internet_gateway_id" {
+  description = "ID of the Internet Gateway"
+  value       = aws_internet_gateway.this.id
 }
- 
-variable "availability_zones" {
-  description = "List of availability zones for the public subnets"
-  type        = list(string)
-  default     = ["us-east-1a", "us-east-1b"]
+
+output "public_route_table_id" {
+  description = "ID of the public route table"
+  value       = aws_route_table.public.id
 }
- 
-variable "ami" {
-  description = "AMI ID for the EC2 instance"
-  type        = string
-  default     = "ami-08a0d1e16fc3f61ea"
+
+output "ec2_security_group_id" {
+  description = "ID of the EC2 security group"
+  value       = aws_security_group.ec2_sg.id
 }
- 
-variable "instance_type" {
-  description = "Instance type for the EC2 instance"
-  type        = string
-  default     = "t2.micro"
+
+output "ec2_instance_id" {
+  description = "ID of the EC2 instance"
+  value       = aws_instance.MY-EC2.id
 }
- 
-variable "key_name" {
-  description = "SSH key name to use for EC2 instance"
-  type        = string
-  default     = "mi-clave-ssh" 
+
+output "ec2_instance_public_ip" {
+  description = "Public IP of the EC2 instance"
+  value       = aws_instance.MY-EC2.public_ip
 }
