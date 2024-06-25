@@ -20,10 +20,11 @@ Este proyecto de Terraform despliega una infraestructura básica en AWS que incl
    - [Instancia EC2](#instancia-ec2)
 3. [Variables](#variables)
 4. [Outputs](#outputs)
+5. [Uso](#uso)
 
 ## Proveedor
 
-Configuramos el proveedor de AWS para especificar la región donde desplegaremos los recursos.
+El proveedor de AWS se configura para especificar la región donde se desplegarán los recursos. Esto permite que Terraform sepa a qué región de AWS conectarse.
 
 ```hcl
 provider "aws" {
@@ -35,7 +36,7 @@ provider "aws" {
 
 ### VPC
 
-Creamos una VPC con el bloque CIDR especificado.
+Una VPC (Virtual Private Cloud) es una red virtual dedicada a tu cuenta de AWS. Definimos una VPC con un bloque CIDR especificado que define el rango de direcciones IP.
 
 ```hcl
 resource "aws_vpc" "this" {
@@ -47,9 +48,13 @@ resource "aws_vpc" "this" {
 }
 ```
 
+**Explicación:**
+- `cidr_block`: El rango de direcciones IP asignado a la VPC.
+- `tags`: Etiquetas para identificar el recurso en AWS.
+
 ### Subnet Pública
 
-Creamos una subred pública dentro de la VPC.
+Una subred es una subdivisión de una VPC. Aquí, creamos una subred pública dentro de la VPC.
 
 ```hcl
 resource "aws_subnet" "public" {
@@ -63,9 +68,15 @@ resource "aws_subnet" "public" {
 }
 ```
 
+**Explicación:**
+- `vpc_id`: ID de la VPC donde se crea la subred.
+- `cidr_block`: El rango de direcciones IP para la subred.
+- `availability_zone`: La zona de disponibilidad en la que se creará la subred.
+- `tags`: Etiquetas para identificar la subred.
+
 ### Internet Gateway
 
-Desplegamos un gateway de Internet para permitir el tráfico de entrada y salida.
+Un Internet Gateway permite que las instancias en la VPC se conecten a Internet.
 
 ```hcl
 resource "aws_internet_gateway" "this" {
@@ -77,9 +88,13 @@ resource "aws_internet_gateway" "this" {
 }
 ```
 
+**Explicación:**
+- `vpc_id`: ID de la VPC a la que se adjunta el Internet Gateway.
+- `tags`: Etiquetas para identificar el Internet Gateway.
+
 ### Route Table Pública
 
-Configuramos una tabla de rutas para la subred pública, permitiendo el acceso a Internet.
+Una tabla de rutas define cómo se enruta el tráfico dentro de la VPC. Creamos una tabla de rutas pública para permitir el acceso a Internet.
 
 ```hcl
 resource "aws_route_table" "public" {
@@ -96,9 +111,14 @@ resource "aws_route_table" "public" {
 }
 ```
 
+**Explicación:**
+- `vpc_id`: ID de la VPC a la que pertenece la tabla de rutas.
+- `route`: Define una ruta que envía todo el tráfico (`0.0.0.0/0`) al Internet Gateway.
+- `tags`: Etiquetas para identificar la tabla de rutas.
+
 ### Asociación de Route Table
 
-Asociamos la tabla de rutas pública con la subred pública.
+Asociamos la tabla de rutas pública con la subred pública, permitiendo que el tráfico en la subred utilice la tabla de rutas.
 
 ```hcl
 resource "aws_route_table_association" "public" {
@@ -107,9 +127,13 @@ resource "aws_route_table_association" "public" {
 }
 ```
 
+**Explicación:**
+- `subnet_id`: ID de la subred pública.
+- `route_table_id`: ID de la tabla de rutas pública.
+
 ### Security Group
 
-Creamos un grupo de seguridad para la instancia EC2, permitiendo el acceso SSH y HTTP.
+Un grupo de seguridad actúa como un firewall para controlar el tráfico hacia y desde las instancias EC2. Definimos un grupo de seguridad para permitir el tráfico SSH (puerto 22) y HTTP (puerto 80).
 
 ```hcl
 resource "aws_security_group" "ec2_sg" {
@@ -142,9 +166,15 @@ resource "aws_security_group" "ec2_sg" {
 }
 ```
 
+**Explicación:**
+- `vpc_id`: ID de la VPC a la que pertenece el grupo de seguridad.
+- `ingress`: Reglas de entrada que permiten tráfico SSH y HTTP desde cualquier IP (`0.0.0.0/0`).
+- `egress`: Reglas de salida que permiten todo el tráfico saliente.
+- `tags`: Etiquetas para identificar el grupo de seguridad.
+
 ### Instancia EC2
 
-Desplegamos una instancia EC2 en la subred pública.
+Desplegamos una instancia EC2 en la subred pública con el grupo de seguridad configurado.
 
 ```hcl
 resource "aws_instance" "example" {
@@ -159,9 +189,16 @@ resource "aws_instance" "example" {
 }
 ```
 
+**Explicación:**
+- `ami`: ID de la imagen de máquina de Amazon (AMI) que se usará para lanzar la instancia.
+- `instance_type`: Tipo de instancia (por ejemplo, `t2.micro`).
+- `subnet_id`: ID de la subred pública donde se lanzará la instancia.
+- `security_groups`: Grupo de seguridad asociado a la instancia.
+- `tags`: Etiquetas para identificar la instancia.
+
 ## Variables
 
-Definimos variables para parametrizar el despliegue.
+Definimos variables para parametrizar el despliegue, facilitando cambios sin modificar el código principal.
 
 ```hcl
 variable "aws_region" {
@@ -203,7 +240,7 @@ variable "instance_type" {
 
 ## Outputs
 
-Definimos los outputs para obtener información de los recursos desplegados.
+Definimos los outputs para obtener información de los recursos desplegados, permitiendo acceder a estos datos fácilmente después del despliegue.
 
 ```hcl
 output "vpc_id" {
@@ -242,26 +279,3 @@ output "ec2_instance_public_ip" {
 }
 ```
 
-## Uso
-
-1. Clona este repositorio.
-2. Navega al directorio del proyecto.
-3. Inicializa el proyecto de Terraform:
-
-   ```sh
-   terraform init
-   ```
-
-4. Revisa el plan de ejecución:
-
-   ```sh
-   terraform plan
-   ```
-
-5. Aplica el plan para desplegar la infraestructura:
-
-   ```sh
-   terraform apply
-   ```
-
-Este Readme proporciona una guía completa para desplegar y entender la infraestructura en AWS utilizando Terraform.
