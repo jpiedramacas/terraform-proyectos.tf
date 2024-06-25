@@ -1,6 +1,29 @@
-Claro, vamos a detallar cada sección del archivo `main.tf` y explicar su propósito y configuración.
+# Proyecto Terraform para Infraestructura en AWS
 
-### Proveedor AWS
+Este proyecto de Terraform despliega una infraestructura básica en AWS que incluye una VPC, una subred pública, una tabla de rutas, un gateway de Internet, un grupo de seguridad y una instancia EC2.
+
+## Requisitos Previos
+
+- [Terraform](https://www.terraform.io/downloads.html) instalado en tu máquina.
+- Credenciales de AWS configuradas en tu entorno (archivo `~/.aws/credentials` o variables de entorno).
+
+## Contenido
+
+1. [Proveedor](#proveedor)
+2. [Recursos](#recursos)
+   - [VPC](#vpc)
+   - [Subnet Pública](#subnet-pública)
+   - [Internet Gateway](#internet-gateway)
+   - [Route Table Pública](#route-table-pública)
+   - [Asociación de Route Table](#asociación-de-route-table)
+   - [Security Group](#security-group)
+   - [Instancia EC2](#instancia-ec2)
+3. [Variables](#variables)
+4. [Outputs](#outputs)
+
+## Proveedor
+
+Configuramos el proveedor de AWS para especificar la región donde desplegaremos los recursos.
 
 ```hcl
 provider "aws" {
@@ -8,9 +31,11 @@ provider "aws" {
 }
 ```
 
-Esta sección configura el proveedor de Terraform para AWS, especificando la región en la que se desplegarán los recursos. La región se toma de una variable (`var.aws_region`).
+## Recursos
 
-### VPC (Virtual Private Cloud)
+### VPC
+
+Creamos una VPC con el bloque CIDR especificado.
 
 ```hcl
 resource "aws_vpc" "this" {
@@ -22,11 +47,9 @@ resource "aws_vpc" "this" {
 }
 ```
 
-- **Resource Type:** `aws_vpc`
-- **cidr_block:** Define el rango de direcciones IP que utilizará la VPC. Se especifica mediante la variable `var.vpc_cidr_block`.
-- **tags:** Etiquetas para identificar el recurso.
-
 ### Subnet Pública
+
+Creamos una subred pública dentro de la VPC.
 
 ```hcl
 resource "aws_subnet" "public" {
@@ -40,12 +63,9 @@ resource "aws_subnet" "public" {
 }
 ```
 
-- **Resource Type:** `aws_subnet`
-- **vpc_id:** El ID de la VPC en la que se creará la subnet. Se refiere al ID de la VPC creada anteriormente (`aws_vpc.this.id`).
-- **cidr_block:** Define el rango de direcciones IP que utilizará la subnet. Se especifica mediante la variable `var.public_subnet_cidr_block`.
-- **availability_zone:** La zona de disponibilidad en la que se creará la subnet. Se especifica mediante la variable `var.availability_zone`.
-
 ### Internet Gateway
+
+Desplegamos un gateway de Internet para permitir el tráfico de entrada y salida.
 
 ```hcl
 resource "aws_internet_gateway" "this" {
@@ -57,10 +77,9 @@ resource "aws_internet_gateway" "this" {
 }
 ```
 
-- **Resource Type:** `aws_internet_gateway`
-- **vpc_id:** El ID de la VPC a la que se asociará el Internet Gateway.
-
 ### Route Table Pública
+
+Configuramos una tabla de rutas para la subred pública, permitiendo el acceso a Internet.
 
 ```hcl
 resource "aws_route_table" "public" {
@@ -77,13 +96,9 @@ resource "aws_route_table" "public" {
 }
 ```
 
-- **Resource Type:** `aws_route_table`
-- **vpc_id:** El ID de la VPC para la que se creará la tabla de rutas.
-- **route:** Define una ruta dentro de la tabla de rutas.
-  - **cidr_block:** Especifica que la ruta es para todo el tráfico (`0.0.0.0/0`).
-  - **gateway_id:** Especifica que el tráfico se enruta a través del Internet Gateway (`aws_internet_gateway.this.id`).
+### Asociación de Route Table
 
-### Asociación de Route Table Pública con Subnet Pública
+Asociamos la tabla de rutas pública con la subred pública.
 
 ```hcl
 resource "aws_route_table_association" "public" {
@@ -92,11 +107,9 @@ resource "aws_route_table_association" "public" {
 }
 ```
 
-- **Resource Type:** `aws_route_table_association`
-- **subnet_id:** El ID de la subnet pública (`aws_subnet.public.id`).
-- **route_table_id:** El ID de la tabla de rutas pública (`aws_route_table.public.id`).
-
 ### Security Group
+
+Creamos un grupo de seguridad para la instancia EC2, permitiendo el acceso SSH y HTTP.
 
 ```hcl
 resource "aws_security_group" "ec2_sg" {
@@ -129,18 +142,9 @@ resource "aws_security_group" "ec2_sg" {
 }
 ```
 
-- **Resource Type:** `aws_security_group`
-- **vpc_id:** El ID de la VPC en la que se creará el grupo de seguridad.
-- **ingress:** Reglas de entrada para el grupo de seguridad.
-  - **from_port, to_port:** Especifica el puerto de origen y destino.
-  - **protocol:** Especifica el protocolo (en este caso, TCP).
-  - **cidr_blocks:** Especifica los bloques CIDR permitidos (en este caso, todo el tráfico `0.0.0.0/0`).
-- **egress:** Reglas de salida para el grupo de seguridad.
-  - **from_port, to_port:** Especifica los puertos de origen y destino para el tráfico de salida.
-  - **protocol:** Especifica el protocolo (en este caso, todo el tráfico `-1`).
-  - **cidr_blocks:** Especifica los bloques CIDR permitidos para el tráfico de salida (en este caso, todo el tráfico `0.0.0.0/0`).
-
 ### Instancia EC2
+
+Desplegamos una instancia EC2 en la subred pública.
 
 ```hcl
 resource "aws_instance" "example" {
@@ -155,13 +159,9 @@ resource "aws_instance" "example" {
 }
 ```
 
-- **Resource Type:** `aws_instance`
-- **ami:** Especifica el ID de la AMI para la instancia EC2. Se toma de la variable `var.ami`.
-- **instance_type:** Especifica el tipo de instancia. Se toma de la variable `var.instance_type`.
-- **subnet_id:** Especifica el ID de la subnet en la que se lanzará la instancia (`aws_subnet.public.id`).
-- **security_groups:** Especifica los grupos de seguridad asociados a la instancia. En este caso, se asocia el grupo de seguridad creado anteriormente (`aws_security_group.ec2_sg.name`).
+## Variables
 
-### Variables
+Definimos variables para parametrizar el despliegue.
 
 ```hcl
 variable "aws_region" {
@@ -201,9 +201,9 @@ variable "instance_type" {
 }
 ```
 
-Estas variables permiten parametrizar la configuración y hacerla reutilizable y flexible. Pueden ser modificadas sin necesidad de cambiar el resto del archivo `main.tf`.
+## Outputs
 
-### Outputs
+Definimos los outputs para obtener información de los recursos desplegados.
 
 ```hcl
 output "vpc_id" {
@@ -242,6 +242,26 @@ output "ec2_instance_public_ip" {
 }
 ```
 
-Estos bloques de salida (`outputs`) proporcionan información útil sobre los recursos creados. Se pueden utilizar para verificar las configuraciones o integrarse con otras herramientas de automatización.
+## Uso
 
-Este archivo `main.tf` es una configuración completa y detallada para crear una infraestructura básica en AWS con una VPC, subnet pública, Internet Gateway, tabla de rutas, grupo de seguridad y una instancia EC2. Cada sección está interconectada para asegurar que todos los componentes trabajen juntos correctamente.
+1. Clona este repositorio.
+2. Navega al directorio del proyecto.
+3. Inicializa el proyecto de Terraform:
+
+   ```sh
+   terraform init
+   ```
+
+4. Revisa el plan de ejecución:
+
+   ```sh
+   terraform plan
+   ```
+
+5. Aplica el plan para desplegar la infraestructura:
+
+   ```sh
+   terraform apply
+   ```
+
+Este Readme proporciona una guía completa para desplegar y entender la infraestructura en AWS utilizando Terraform.
